@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bosphoruz VA — VATSIM Virtual Airline</title>
+<title>Bosphorus VA — VATSIM Virtual Airline</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -24,10 +24,10 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--text);overflow-x:hidden;cursor:none;}
 
-  /* CURSOR */
-  #cursor{width:20px;height:20px;border:1.5px solid var(--cyan);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:all .08s ease;}
-  #cursor-dot{width:4px;height:4px;background:var(--cyan);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
-
+  html, body, * {
+   cursor: default !important; /* Tüm sayfada 'bekle' ikonu görünür */
+  }
+  
   /* NOISE */
   body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.4;}
 
@@ -226,7 +226,7 @@
       <path d="M7 18L15 27L23 18H19L15 23L11 18H7Z" fill="#ffaa00" opacity=".7"/>
       <circle cx="15" cy="15" r="2" fill="#00e5ff"/>
     </svg>
-    <span class="bv">Bosphoruz</span>&nbsp;VA
+    <span class="bv">Bosphorus</span>&nbsp;VA
   </a>
   <ul class="nav-links">
     <li><a href="#stats">Stats</a></li>
@@ -235,7 +235,7 @@
     <li><a href="#about">About</a></li>
     <li><a href="#join">Join</a></li>
   </ul>
-  <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="nav-cta">APPLY NOW</a>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSeV8QUHZi9GAvMZbmUnvnxgV8kO22WKpTLndk0CvFjZKshZ5A/viewform?usp=dialog" target="_blank" class="nav-cta">APPLY NOW</a>
 </nav>
 
 <!-- HERO -->
@@ -274,7 +274,7 @@
 
   <div class="hero-content">
     <div class="vatsim-badge"><span class="dot"></span>VATSIM CONNECTED — LIVE</div>
-    <div class="hero-tag">VIRTUAL AIRLINE — EST. 2024</div>
+    <div class="hero-tag">VIRTUAL AIRLINE — EST. 2026</div>
     <h1 class="hero-title">
       WHERE THE<br>
       <span class="c">BOSPHORUS</span><br>
@@ -284,7 +284,7 @@
       Turkey's premier VATSIM virtual airline. Experience realistic procedures, professional ATC environments and a growing global route network — all from Istanbul.
     </p>
     <div class="hero-btns">
-      <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-primary">APPLY NOW</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeV8QUHZi9GAvMZbmUnvnxgV8kO22WKpTLndk0CvFjZKshZ5A/viewform?usp=dialog" target="_blank" class="btn-primary">APPLY NOW</a>
       <a href="#fleet" class="btn-secondary">EXPLORE FLEET</a>
     </div>
   </div>
@@ -425,7 +425,7 @@
         </div>
       </div>
 
-      <!-- B737 MAX 9 -->
+      <!-- A319 -->
       <div class="fleet-card reveal" style="transition-delay:.24s">
         <div class="fleet-img" style="background:linear-gradient(135deg,#0a1220,#1e1030)">
           <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -440,12 +440,12 @@
         <div class="fleet-tag" style="color:var(--amber);border-color:rgba(255,170,0,.3);background:rgba(255,170,0,.08)">NARROW BODY</div>
         <div class="fleet-body">
           <div class="fleet-type" style="color:#00e5ff">BOEING</div>
-          <div class="fleet-model">B737 MAX 9</div>
+          <div class="fleet-model">A319</div>
           <div class="fleet-specs">
-            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">193</span></div>
-            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">6,570 km</span></div>
-            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.79</span></div>
-            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM LEAP</span></div>
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">160</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">5.954 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.78</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM 56</span></div>
           </div>
         </div>
       </div>
@@ -558,61 +558,9 @@
       </div>
 
       <!-- REGIONAL -->
-      <div class="fleet-category reveal" style="transition-delay:.05s"><span>REGIONAL</span></div>
+      <!--<div class="fleet-category reveal" style="transition-delay:.05s"><span>REGIONAL</span></div> -->
 
-      <!-- ATR 72-600 -->
-      <div class="fleet-card reveal">
-        <div class="fleet-img" style="background:linear-gradient(135deg,#0f1a10,#182818)">
-          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 50 L125 46 L165 48 L125 50 L20 54Z" fill="#86efac" opacity=".65"/>
-            <path d="M125 46 L165 48 L160 44Z" fill="#bbf7d0" opacity=".9"/>
-            <path d="M60 46 L92 22 L100 30 L80 46Z" fill="#16a34a" opacity=".6"/>
-            <path d="M68 52 L88 66 L94 60 L80 52Z" fill="#16a34a" opacity=".4"/>
-            <circle cx="70" cy="42" r="6" fill="none" stroke="#86efac" stroke-width="1" opacity=".5"/>
-            <circle cx="100" cy="42" r="6" fill="none" stroke="#86efac" stroke-width="1" opacity=".5"/>
-          </svg>
-          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(134,239,172,.4)">TC-BVI · AT76</div>
-        </div>
-        <div class="fleet-tag" style="color:#86efac;border-color:rgba(134,239,172,.3);background:rgba(134,239,172,.06)">REGIONAL</div>
-        <div class="fleet-body">
-          <div class="fleet-type" style="color:var(--amber)">ATR</div>
-          <div class="fleet-model">ATR 72-600</div>
-          <div class="fleet-specs">
-            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">78</span></div>
-            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">1,528 km</span></div>
-            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">510 km/h</span></div>
-            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">PW127M</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- E195-E2 -->
-      <div class="fleet-card reveal" style="transition-delay:.08s">
-        <div class="fleet-img" style="background:linear-gradient(135deg,#101818,#182030)">
-          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 50 L128 46 L170 48 L128 50 L18 54Z" fill="#fbbf24" opacity=".6"/>
-            <path d="M128 46 L170 48 L165 44Z" fill="#fde68a" opacity=".9"/>
-            <path d="M58 46 L94 21 L104 30 L82 46Z" fill="#d97706" opacity=".6"/>
-            <path d="M67 52 L90 67 L97 60 L82 52Z" fill="#d97706" opacity=".4"/>
-            <path d="M132 47 L150 40 L153 43 L135 49Z" fill="#fbbf24" opacity=".45"/>
-          </svg>
-          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(251,191,36,.4)">TC-BVJ · E295</div>
-        </div>
-        <div class="fleet-tag" style="color:#fbbf24;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)">REGIONAL</div>
-        <div class="fleet-body">
-          <div class="fleet-type" style="color:var(--cyan)">EMBRAER</div>
-          <div class="fleet-model">E195-E2</div>
-          <div class="fleet-specs">
-            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">146</span></div>
-            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">4,300 km</span></div>
-            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.82</span></div>
-            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">PW1900G</span></div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /fleet-grid -->
-  </div>
+      
 </section>
 
 <!-- ROUTES -->
@@ -702,9 +650,9 @@
     </div>
     <div class="about-text reveal-right">
       <div class="section-label">ABOUT US</div>
-      <h2 class="section-title">The <span>Bosphoruz</span> Experience</h2>
+      <h2 class="section-title">The <span>Bosphorus</span> Experience</h2>
       <p>
-        <strong>Bosphoruz VA</strong> is a Turkey-based VATSIM virtual airline founded by aviation enthusiasts who believe simulated flight should be as close to the real thing as possible.
+        <strong>Bosphorus VA</strong> is a Turkey-based VATSIM virtual airline founded by aviation enthusiasts who believe simulated flight should be as close to the real thing as possible.
       </p>
       <p>
         We operate from Istanbul's <strong>LTFM</strong> across Europe, the Middle East, Africa and Asia — using a diverse fleet ranging from nimble ATR turboprops to long-haul widebodies.
@@ -741,7 +689,7 @@
   <div class="join-inner">
     <div class="vatsim-badge" style="margin:0 auto 2rem"><span class="dot"></span>FREE MEMBERSHIP</div>
     <h2 class="join-title reveal">Ready to <span>Take Off</span>?</h2>
-    <p class="join-sub reveal">Three steps to start your virtual pilot career with Bosphoruz VA.</p>
+    <p class="join-sub reveal">Three steps to start your virtual pilot career with Bosphorus VA.</p>
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">01</div>
@@ -760,15 +708,15 @@
       </div>
     </div>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-      <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-primary">APPLY — IT'S FREE</a>
-      <a href="#" class="btn-secondary">JOIN DISCORD</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeV8QUHZi9GAvMZbmUnvnxgV8kO22WKpTLndk0CvFjZKshZ5A/viewform?usp=dialog" target="_blank" class="btn-primary">APPLY — IT'S FREE</a>
+      <a href="https://discord.gg/qraxEpdDtJ" class="btn-secondary">JOIN DISCORD</a>
     </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo"><span>Bosphoruz</span> VA</div>
+  <div class="footer-logo"><span>Bosphorus</span> VA</div>
   <div class="footer-links">
     <a href="#">VATSIM</a>
     <a href="#">smartCARS</a>
@@ -778,22 +726,12 @@
   </div>
   <div class="footer-right">
     SYS v1.0.0 // LTFM BASE // VATSIM CONNECTED<br>
-    © 2024 BOSPHORUZ VA — ALL RIGHTS RESERVED
+    © 2026 BOSPHORUS VA — ALL RIGHTS RESERVED
   </div>
 </footer>
 
 <script>
-// Custom cursor
-const cursor = document.getElementById('cursor');
-const dot    = document.getElementById('cursor-dot');
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
-  dot.style.left    = e.clientX + 'px'; dot.style.top    = e.clientY + 'px';
-});
-document.querySelectorAll('a,button,.fleet-card,.route-item').forEach(el => {
-  el.addEventListener('mouseenter', () => { cursor.style.width='36px';cursor.style.height='36px';cursor.style.borderColor='var(--amber)'; });
-  el.addEventListener('mouseleave', () => { cursor.style.width='20px';cursor.style.height='20px';cursor.style.borderColor='var(--cyan)'; });
-});
+
 
 // Stars
 const starsEl = document.getElementById('stars');
