@@ -1,133 +1,850 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bosphorus Virtual Airlines</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bosphoruz VA — VATSIM Virtual Airline</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:  #060c1a;
+    --navy2: #0d1b35;
+    --navy3: #142040;
+    --cyan:  #00e5ff;
+    --cyan2: #00b4cc;
+    --amber: #ffaa00;
+    --amber2:#cc8800;
+    --green: #00ff88;
+    --red:   #ff3355;
+    --text:  #c8d8f0;
+    --text2: #7a9abf;
+    --border:rgba(0,229,255,0.15);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Rajdhani',sans-serif;background:var(--navy);color:var(--text);overflow-x:hidden;cursor:none;}
 
-  <style>
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:#0f172a;
-      color:white;
-    }
+  /* CURSOR */
+  #cursor{width:20px;height:20px;border:1.5px solid var(--cyan);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:all .08s ease;}
+  #cursor-dot{width:4px;height:4px;background:var(--cyan);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
 
-    header{
-      text-align:center;
-      padding:100px 20px;
-      background:#111827;
-    }
+  /* NOISE */
+  body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.4;}
 
-    h1{
-      font-size:60px;
-      margin:0;
-    }
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 4rem;background:linear-gradient(to bottom,rgba(6,12,26,.95),transparent);backdrop-filter:blur(12px);border-bottom:.5px solid var(--border);transition:all .3s;}
+  nav.scrolled{background:rgba(6,12,26,.98);}
+  .nav-logo{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:#fff;letter-spacing:.1em;text-decoration:none;display:flex;align-items:center;gap:.6rem;}
+  .nav-logo .bv{color:var(--cyan);}
+  .nav-logo svg{width:30px;height:30px;}
+  .nav-links{display:flex;gap:2.5rem;list-style:none;}
+  .nav-links a{font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);text-decoration:none;position:relative;transition:color .2s;}
+  .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform .2s;}
+  .nav-links a:hover{color:var(--cyan);}
+  .nav-links a:hover::after{transform:scaleX(1);}
+  .nav-cta{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.15em;color:var(--navy);background:var(--cyan);padding:.6rem 1.4rem;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;}
+  .nav-cta:hover{background:var(--amber);transform:translateY(-1px);}
 
-    h1 span{
-      color:#ef4444;
-    }
+  /* HERO */
+  #hero{height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .stars{position:absolute;inset:0;z-index:0;}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) infinite var(--delay,0s);}
+  @keyframes twinkle{0%,100%{opacity:var(--min,.2);}50%{opacity:var(--max,1);}}
+  .radar-container{position:absolute;right:8%;top:50%;transform:translateY(-50%);width:400px;height:400px;z-index:2;opacity:.22;}
+  .radar-sweep{transform-origin:200px 200px;animation:sweep 4s linear infinite;}
+  @keyframes sweep{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .blip{animation:blip 4s infinite;}
+  @keyframes blip{0%,100%{opacity:0;r:2;}50%{opacity:1;r:3;}}
+  .grid-overlay{position:absolute;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:80px 80px;}
+  #hero::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.03) 3px,rgba(0,0,0,.03) 4px);}
+  .hero-content{position:relative;z-index:3;padding:0 4rem;max-width:720px;}
+  .hero-tag{font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:.25em;color:var(--cyan);margin-bottom:1.5rem;display:flex;align-items:center;gap:.8rem;}
+  .hero-tag::before{content:'';width:30px;height:1px;background:var(--cyan);}
+  .hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(2.6rem,5.5vw,5rem);font-weight:900;line-height:1.05;color:#fff;text-shadow:0 0 60px rgba(0,229,255,.25);}
+  .hero-title .c{color:var(--cyan);}
+  .hero-title .a{color:var(--amber);}
+  .hero-sub{font-size:1.1rem;font-weight:300;color:var(--text2);margin:1.5rem 0 2.5rem;line-height:1.75;max-width:500px;letter-spacing:.02em;}
+  .hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+  .btn-primary{font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.18em;color:var(--navy);background:var(--cyan);padding:.85rem 2rem;text-decoration:none;display:inline-block;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .25s;position:relative;overflow:hidden;}
+  .btn-primary::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.2);transform:translateX(-100%) skewX(-15deg);transition:transform .4s;}
+  .btn-primary:hover::after{transform:translateX(200%) skewX(-15deg);}
+  .btn-primary:hover{background:var(--amber);transform:translateY(-2px);}
+  .btn-secondary{font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.18em;color:var(--cyan);border:1px solid var(--cyan);padding:.85rem 2rem;text-decoration:none;display:inline-block;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .25s;}
+  .btn-secondary:hover{background:rgba(0,229,255,.1);transform:translateY(-2px);}
+  .telemetry-bar{position:absolute;bottom:3rem;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:3rem;padding:0 4rem;}
+  .tele-item{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+  .tele-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--text2);}
+  .tele-value{font-family:'Share Tech Mono',monospace;font-size:1.4rem;color:var(--cyan);text-shadow:0 0 10px rgba(0,229,255,.4);}
+  .tele-unit{font-size:.65rem;color:var(--amber);}
+  .scroll-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:.4rem;font-size:.62rem;letter-spacing:.2em;color:var(--text2);text-transform:uppercase;animation:bounce 2s infinite;}
+  .scroll-hint::after{content:'';width:1px;height:30px;background:linear-gradient(to bottom,var(--cyan),transparent);display:block;}
+  @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);}}
 
-    p{
-      color:#cbd5e1;
-      font-size:20px;
-    }
+  /* SECTIONS */
+  section{position:relative;z-index:2;}
+  .section-label{font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.25em;color:var(--cyan);display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;}
+  .section-label::before{content:'';width:24px;height:1px;background:var(--cyan);}
+  h2.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.7rem,3.2vw,2.6rem);font-weight:700;color:#fff;margin-bottom:1rem;}
+  h2.section-title span{color:var(--cyan);}
 
-    .btn{
-      display:inline-block;
-      margin-top:20px;
-      padding:15px 30px;
-      background:#ef4444;
-      color:white;
-      text-decoration:none;
-      border-radius:10px;
-      font-weight:bold;
-    }
+  /* STATS */
+  #stats{background:var(--navy2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 4rem;}
+  .stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+  .stat-item{text-align:center;padding:2rem;border-right:1px solid var(--border);position:relative;}
+  .stat-item:last-child{border-right:none;}
+  .stat-number{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 30px rgba(0,229,255,.35);}
+  .stat-suffix{color:var(--amber);font-size:.65em;}
+  .stat-label{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-top:.5rem;font-family:'Share Tech Mono',monospace;}
+  .stat-bar{position:absolute;bottom:0;left:20%;right:20%;height:2px;background:linear-gradient(to right,transparent,var(--cyan),transparent);opacity:.5;}
 
-    section{
-      padding:60px 20px;
-      max-width:1000px;
-      margin:auto;
-    }
+  /* FLEET */
+  #fleet{padding:7rem 4rem;}
+  .fleet-inner{max-width:1260px;margin:0 auto;}
+  .fleet-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:3rem;}
+  .fleet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;}
+  .fleet-card{background:var(--navy2);border:1px solid var(--border);overflow:hidden;position:relative;cursor:pointer;transition:all .3s;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));}
+  .fleet-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--cyan);transition:height .4s;}
+  .fleet-card:hover::before{height:100%;}
+  .fleet-card:hover{border-color:rgba(0,229,255,.4);transform:translateY(-5px);}
+  .fleet-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a1628,#142040);position:relative;overflow:hidden;}
+  .fleet-img::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 50%,rgba(0,229,255,.06),transparent 70%);}
+  .plane-svg{width:145px;opacity:.9;transition:transform .4s;}
+  .fleet-card:hover .plane-svg{transform:translateX(8px) translateY(-4px);}
+  .fleet-body{padding:1.1rem 1.2rem;}
+  .fleet-type{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--amber);margin-bottom:.3rem;}
+  .fleet-model{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.75rem;}
+  .fleet-specs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+  .spec{display:flex;flex-direction:column;gap:.15rem;}
+  .spec-key{font-size:.58rem;letter-spacing:.15em;color:var(--text2);text-transform:uppercase;}
+  .spec-val{font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--cyan);}
+  .fleet-tag{position:absolute;top:.8rem;right:.8rem;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:.1em;background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.3);padding:.2rem .5rem;}
 
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:20px;
-    }
+  /* CATEGORY ROW HEADERS */
+  .fleet-category{grid-column:1/-1;display:flex;align-items:center;gap:1rem;margin-top:1rem;padding:.5rem 0;}
+  .fleet-category span{font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;color:var(--text2);}
+  .fleet-category::after{content:'';flex:1;height:1px;background:var(--border);}
 
-    .card{
-      background:#1e293b;
-      padding:20px;
-      border-radius:15px;
-    }
+  /* ROUTES */
+  #routes{padding:7rem 4rem;background:var(--navy2);border-top:1px solid var(--border);}
+  .routes-inner{max-width:1200px;margin:0 auto;}
+  .routes-layout{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-top:3rem;}
+  .route-map{position:relative;background:#0a1628;border:1px solid var(--border);padding:1rem;overflow:hidden;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,24px 100%,0 calc(100% - 24px));}
+  .route-list{display:flex;flex-direction:column;gap:.7rem;}
+  .route-item{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.3rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-left:3px solid var(--cyan);cursor:pointer;transition:all .2s;}
+  .route-item:hover{background:rgba(0,229,255,.06);transform:translateX(4px);}
+  .route-item.amb{border-left-color:var(--amber);}
+  .route-item.grn{border-left-color:var(--green);}
+  .route-airports{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:#fff;white-space:nowrap;}
+  .route-airports span{color:var(--text2);margin:0 .4rem;}
+  .route-info{flex:1;}
+  .route-name{font-size:.82rem;font-weight:500;color:var(--text);}
+  .route-details{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--text2);margin-top:.15rem;}
+  .route-dist{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--cyan);text-align:right;white-space:nowrap;}
 
-    footer{
-      text-align:center;
-      padding:30px;
-      border-top:1px solid #334155;
-      color:#94a3b8;
-    }
-  </style>
+  /* ABOUT */
+  #about{padding:7rem 4rem;}
+  .about-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+  .cockpit-display{width:100%;background:#080f20;border:1px solid rgba(0,229,255,.2);padding:2rem;position:relative;overflow:hidden;clip-path:polygon(0 0,calc(100% - 32px) 0,100% 32px,100% 100%,32px 100%,0 calc(100% - 32px));}
+  .cockpit-display::before{content:'';position:absolute;top:0;left:0;border-top:32px solid var(--navy2);border-right:32px solid transparent;}
+  .hud-line{font-family:'Share Tech Mono',monospace;font-size:.73rem;color:var(--cyan);padding:.4rem 0;border-bottom:1px solid rgba(0,229,255,.08);display:flex;justify-content:space-between;}
+  .hud-line.amb{color:var(--amber);}
+  .hud-line.grn{color:var(--green);}
+  .hud-line.dim{color:var(--text2);}
+  .hud-sep{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:rgba(0,229,255,.3);padding:.6rem 0;text-align:center;}
+  .about-text p{font-size:1rem;line-height:1.8;color:var(--text2);margin-bottom:1.2rem;}
+  .about-text p strong{color:var(--cyan);font-weight:600;}
+  .feature-list{display:flex;flex-direction:column;gap:.8rem;margin-top:2rem;}
+  .feature-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.2rem;background:rgba(0,229,255,.03);border:1px solid var(--border);}
+  .feature-icon{width:36px;height:36px;flex-shrink:0;border:1px solid rgba(0,229,255,.3);display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:1rem;}
+  .feature-text h4{font-size:.88rem;font-weight:600;color:#fff;margin-bottom:.2rem;}
+  .feature-text p{font-size:.78rem;color:var(--text2);margin:0;line-height:1.5;}
+
+  /* JOIN */
+  #join{padding:7rem 4rem;background:var(--navy2);border-top:1px solid var(--border);text-align:center;}
+  .join-inner{max-width:720px;margin:0 auto;}
+  .join-title{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:900;color:#fff;margin-bottom:1rem;}
+  .join-title span{color:var(--cyan);}
+  .join-sub{font-size:1.05rem;color:var(--text2);margin-bottom:3rem;line-height:1.7;}
+  .steps{display:flex;gap:1.5rem;margin-bottom:3rem;text-align:left;}
+  .step{flex:1;padding:1.5rem;background:rgba(255,255,255,.02);border:1px solid var(--border);position:relative;overflow:hidden;}
+  .step-num{font-family:'Orbitron',sans-serif;font-size:2.4rem;font-weight:900;color:rgba(0,229,255,.1);line-height:1;margin-bottom:.8rem;}
+  .step h4{font-size:.88rem;font-weight:600;color:#fff;margin-bottom:.4rem;}
+  .step p{font-size:.78rem;color:var(--text2);line-height:1.6;}
+  .step::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--cyan),transparent);opacity:.5;}
+
+  /* FOOTER */
+  footer{background:#030810;border-top:1px solid var(--border);padding:3rem 4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem;}
+  .footer-logo{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#fff;letter-spacing:.1em;}
+  .footer-logo span{color:var(--cyan);}
+  .footer-links{display:flex;gap:2rem;}
+  .footer-links a{font-size:.78rem;letter-spacing:.1em;color:var(--text2);text-decoration:none;transition:color .2s;}
+  .footer-links a:hover{color:var(--cyan);}
+  .footer-right{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:rgba(0,229,255,.3);}
+
+  .vatsim-badge{display:inline-flex;align-items:center;gap:.6rem;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);padding:.5rem 1.2rem;margin-bottom:1.5rem;font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:.15em;color:var(--cyan);}
+  .vatsim-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+
+  /* CORNER DECO */
+  .corner-tl,.corner-br{position:absolute;width:40px;height:40px;pointer-events:none;}
+  .corner-tl{top:0;left:0;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);}
+  .corner-br{bottom:0;right:0;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);}
+
+  /* ANIMATIONS */
+  .reveal{opacity:0;transform:translateY(30px);transition:all .7s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+  .reveal-left{opacity:0;transform:translateX(-40px);transition:all .7s ease;}
+  .reveal-left.visible{opacity:1;transform:translateX(0);}
+  .reveal-right{opacity:0;transform:translateX(40px);transition:all .7s ease;}
+  .reveal-right.visible{opacity:1;transform:translateX(0);}
+
+  @media(max-width:1100px){.fleet-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:900px){
+    nav{padding:1rem 1.5rem;}.nav-links{display:none;}
+    #hero,#stats,#fleet,#routes,#about,#join{padding:4rem 1.5rem;}
+    .stats-inner{grid-template-columns:repeat(2,1fr);}
+    .stat-item{border-right:none;border-bottom:1px solid var(--border);}
+    .fleet-grid{grid-template-columns:1fr;}
+    .routes-layout,.about-inner{grid-template-columns:1fr;}
+    .steps{flex-direction:column;}
+    .telemetry-bar{gap:1.5rem;}
+    .radar-container{opacity:.1;width:250px;height:250px;}
+    footer{flex-direction:column;text-align:center;}
+  }
+</style>
 </head>
-
 <body>
 
-<header>
-  <h1>BOSPHORUS <span>VIRTUAL AIRLINES</span></h1>
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
 
-  <p>
-    Modern Turkish Virtual Airline operating on the VATSIM Network.
-  </p>
-
-  <a class="btn" href="https://discord.gg/PBkaSAfjeG">
-    Join Discord
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">
+    <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 18L15 3L26 18H21L15 9L9 18H4Z" fill="#00e5ff" opacity=".9"/>
+      <path d="M7 18L15 27L23 18H19L15 23L11 18H7Z" fill="#ffaa00" opacity=".7"/>
+      <circle cx="15" cy="15" r="2" fill="#00e5ff"/>
+    </svg>
+    <span class="bv">Bosphoruz</span>&nbsp;VA
   </a>
-</header>
+  <ul class="nav-links">
+    <li><a href="#stats">Stats</a></li>
+    <li><a href="#fleet">Fleet</a></li>
+    <li><a href="#routes">Routes</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#join">Join</a></li>
+  </ul>
+  <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="nav-cta">APPLY NOW</a>
+</nav>
 
-<section>
-  <h2>About Us</h2>
+<!-- HERO -->
+<section id="hero">
+  <div class="stars" id="stars"></div>
+  <div class="grid-overlay"></div>
 
-  <div class="cards">
-    <div class="card">
-      <h3>Hub</h3>
-      <p>LTFM Istanbul Airport</p>
+  <div class="radar-container">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <circle cx="200" cy="200" r="190" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".6"/>
+      <circle cx="200" cy="200" r="140" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".5"/>
+      <circle cx="200" cy="200" r="90"  fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".5"/>
+      <circle cx="200" cy="200" r="45"  fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".5"/>
+      <line x1="10"  y1="200" x2="390" y2="200" stroke="#00e5ff" stroke-width=".5" opacity=".4"/>
+      <line x1="200" y1="10"  x2="200" y2="390" stroke="#00e5ff" stroke-width=".5" opacity=".4"/>
+      <line x1="65"  y1="65"  x2="335" y2="335" stroke="#00e5ff" stroke-width=".5" opacity=".15"/>
+      <line x1="335" y1="65"  x2="65"  y2="335" stroke="#00e5ff" stroke-width=".5" opacity=".15"/>
+      <g class="radar-sweep">
+        <defs>
+          <radialGradient id="sg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity=".8"/>
+            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path d="M200,200 L200,10 A190,190 0 0,1 390,200 Z" fill="url(#sg)" opacity=".3"/>
+        <line x1="200" y1="200" x2="200" y2="10" stroke="#00e5ff" stroke-width="1.5" opacity=".8"/>
+      </g>
+      <circle cx="265" cy="130" r="3" fill="#00e5ff"  class="blip" style="animation-delay:.8s"/>
+      <circle cx="150" cy="260" r="2.5" fill="#ffaa00" class="blip" style="animation-delay:2.1s"/>
+      <circle cx="310" cy="220" r="2" fill="#00e5ff"  class="blip" style="animation-delay:3.3s"/>
+      <circle cx="120" cy="160" r="3" fill="#00ff88"  class="blip" style="animation-delay:1.5s"/>
+      <circle cx="230" cy="300" r="2" fill="#ffaa00"  class="blip" style="animation-delay:.3s"/>
+      <text x="200" y="196" text-anchor="middle" font-family="'Share Tech Mono',monospace" font-size="9" fill="#00e5ff" opacity=".5">LTFM</text>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <div class="vatsim-badge"><span class="dot"></span>VATSIM CONNECTED — LIVE</div>
+    <div class="hero-tag">VIRTUAL AIRLINE — EST. 2024</div>
+    <h1 class="hero-title">
+      WHERE THE<br>
+      <span class="c">BOSPHORUS</span><br>
+      <span class="a">MEETS</span> THE SKY
+    </h1>
+    <p class="hero-sub">
+      Turkey's premier VATSIM virtual airline. Experience realistic procedures, professional ATC environments and a growing global route network — all from Istanbul.
+    </p>
+    <div class="hero-btns">
+      <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-primary">APPLY NOW</a>
+      <a href="#fleet" class="btn-secondary">EXPLORE FLEET</a>
     </div>
+  </div>
 
-    <div class="card">
-      <h3>Network</h3>
-      <p>VATSIM</p>
+  <div class="telemetry-bar">
+    <div class="tele-item">
+      <span class="tele-label">ACTIVE PILOTS</span>
+      <span class="tele-value">6<span class="tele-unit"> crew</span></span>
     </div>
-
-    <div class="card">
-      <h3>Fleet</h3>
-      <p>A320 / B738 / B773</p>
+    <div class="tele-item">
+      <span class="tele-label">NETWORK</span>
+      <span class="tele-value" style="color:var(--green)">VATSIM<span class="tele-unit"> ✓</span></span>
     </div>
+    <div class="tele-item">
+      <span class="tele-label">HOME BASE</span>
+      <span class="tele-value">LTFM<span class="tele-unit"> /IST</span></span>
+    </div>
+    <div class="tele-item">
+      <span class="tele-label">FLEET SIZE</span>
+      <span class="tele-value">10<span class="tele-unit"> ac</span></span>
+    </div>
+  </div>
+  <div class="scroll-hint">SCROLL DOWN</div>
+</section>
 
-    <div class="card">
-      <h3>Region</h3>
-      <p>Europe</p>
+<!-- STATS -->
+<section id="stats">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-number"><span class="counter" data-target="6">0</span></div>
+      <div class="stat-label">Active Pilots</div>
+      <div class="stat-bar"></div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.1s">
+      <div class="stat-number"><span class="counter" data-target="10">0</span></div>
+      <div class="stat-label">Fleet Aircraft</div>
+      <div class="stat-bar"></div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.2s">
+      <div class="stat-number"><span class="counter" data-target="24">0</span><span class="stat-suffix">+</span></div>
+      <div class="stat-label">Active Routes</div>
+      <div class="stat-bar"></div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.3s">
+      <div class="stat-number"><span class="counter" data-target="18">0</span></div>
+      <div class="stat-label">Countries Served</div>
+      <div class="stat-bar"></div>
     </div>
   </div>
 </section>
 
-<section>
-  <h2>Popular Routes</h2>
+<!-- FLEET -->
+<section id="fleet">
+  <div class="fleet-inner">
+    <div class="fleet-header">
+      <div>
+        <div class="section-label reveal">FLEET</div>
+        <h2 class="section-title reveal">Our <span>Aircraft</span></h2>
+      </div>
+    </div>
+    <div class="fleet-grid">
 
-  <div class="cards">
-    <div class="card">LTFM → LTAC</div>
-    <div class="card">LTFM → EGLL</div>
-    <div class="card">LTFM → EHAM</div>
-    <div class="card">LTFM → EDDF</div>
-    <div class="card">LTFM → ENGM</div>
-    <div class="card">LTFM → LTAI</div>
-    <div class="card">LTFM → LTBJ</div>
+      <!-- NARROW BODY -->
+      <div class="fleet-category reveal"><span>NARROW BODY</span></div>
+
+      <!-- A320neo -->
+      <div class="fleet-card reveal">
+        <div class="fleet-img">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 50 L138 45 L188 47 L138 49 L10 55Z" fill="#00e5ff" opacity=".75"/>
+            <path d="M138 45 L188 47 L183 43Z" fill="#ffaa00" opacity=".9"/>
+            <path d="M55 45 L93 16 L106 26 L76 45Z" fill="#00b4cc" opacity=".6"/>
+            <path d="M66 51 L90 70 L98 62 L76 51Z" fill="#00b4cc" opacity=".4"/>
+            <path d="M143 46 L163 38 L166 42 L147 48Z" fill="#00b4cc" opacity=".5"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,229,255,.45)">TC-BVA · A320N</div>
+        </div>
+        <div class="fleet-tag">NARROW BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type">AIRBUS</div>
+          <div class="fleet-model">A320 Neo</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">180</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">6,300 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.78</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM LEAP</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A321neo -->
+      <div class="fleet-card reveal" style="transition-delay:.08s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#091424,#132038)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 50 L142 45 L192 47 L142 49 L8 56Z" fill="#00e5ff" opacity=".7"/>
+            <path d="M142 45 L192 47 L186 43Z" fill="#ffaa00" opacity=".9"/>
+            <path d="M52 45 L94 14 L108 24 L76 45Z" fill="#009fbb" opacity=".6"/>
+            <path d="M63 52 L90 73 L99 64 L76 52Z" fill="#009fbb" opacity=".4"/>
+            <path d="M146 46 L168 37 L171 41 L150 48Z" fill="#009fbb" opacity=".5"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,229,255,.45)">TC-BVB · A321N</div>
+        </div>
+        <div class="fleet-tag">NARROW BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type">AIRBUS</div>
+          <div class="fleet-model">A321 Neo</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">220</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">7,400 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.78</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM LEAP</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B737 MAX 8 -->
+      <div class="fleet-card reveal" style="transition-delay:.16s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0a1220,#181028)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 50 L136 45 L186 47 L136 49 L10 55Z" fill="#ffaa00" opacity=".7"/>
+            <path d="M136 45 L186 47 L181 43Z" fill="#ffdd44" opacity=".9"/>
+            <path d="M53 45 L91 17 L105 27 L74 45Z" fill="#cc8800" opacity=".6"/>
+            <path d="M65 52 L88 71 L97 63 L74 52Z" fill="#cc8800" opacity=".4"/>
+            <path d="M140 46 L160 38 L163 42 L144 48Z" fill="#ffaa00" opacity=".5"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,170,0,.45)">TC-BVC · B38M</div>
+        </div>
+        <div class="fleet-tag" style="color:var(--amber);border-color:rgba(255,170,0,.3);background:rgba(255,170,0,.08)">NARROW BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:#00e5ff">BOEING</div>
+          <div class="fleet-model">B737 MAX 8</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">178</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">6,570 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.79</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM LEAP</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B737 MAX 9 -->
+      <div class="fleet-card reveal" style="transition-delay:.24s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0a1220,#1e1030)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 50 L138 45 L188 47 L138 49 L8 56Z" fill="#ffaa00" opacity=".65"/>
+            <path d="M138 45 L188 47 L183 43Z" fill="#ffcc00" opacity=".9"/>
+            <path d="M50 45 L92 15 L107 25 L75 45Z" fill="#bb7700" opacity=".6"/>
+            <path d="M62 52 L89 74 L98 65 L75 52Z" fill="#bb7700" opacity=".4"/>
+            <path d="M142 46 L163 37 L166 41 L146 48Z" fill="#ffaa00" opacity=".5"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,170,0,.45)">TC-BVD · B39M</div>
+        </div>
+        <div class="fleet-tag" style="color:var(--amber);border-color:rgba(255,170,0,.3);background:rgba(255,170,0,.08)">NARROW BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:#00e5ff">BOEING</div>
+          <div class="fleet-model">B737 MAX 9</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">193</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">6,570 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.79</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">CFM LEAP</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WIDE BODY -->
+      <div class="fleet-category reveal" style="transition-delay:.05s"><span>WIDE BODY</span></div>
+
+      <!-- A330-300 -->
+      <div class="fleet-card reveal">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0a1628,#0a2010)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 50 L145 44 L192 46 L145 48 L8 56Z" fill="#00ff88" opacity=".6"/>
+            <path d="M145 44 L192 46 L186 42Z" fill="#00ffaa" opacity=".9"/>
+            <path d="M44 44 L90 10 L110 22 L73 44Z" fill="#00cc66" opacity=".6"/>
+            <path d="M55 52 L88 76 L99 68 L73 52Z" fill="#00cc66" opacity=".38"/>
+            <path d="M148 45 L170 36 L174 40 L152 47Z" fill="#00ff88" opacity=".5"/>
+            <path d="M153 45 L173 38 L176 41 L157 47Z" fill="#00ff88" opacity=".3"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,255,136,.4)">TC-BVE · A333</div>
+        </div>
+        <div class="fleet-tag" style="color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.06)">WIDE BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:var(--amber)">AIRBUS</div>
+          <div class="fleet-model">A330-300</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">277</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">11,750 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.82</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">RR Trent 700</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A350-900 -->
+      <div class="fleet-card reveal" style="transition-delay:.08s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#091820,#0f2030)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 50 L148 43 L195 45 L148 47 L6 57Z" fill="#00ff88" opacity=".55"/>
+            <path d="M148 43 L195 45 L189 41Z" fill="#66ffcc" opacity=".9"/>
+            <path d="M40 43 L92 7  L115 20 L75 43Z" fill="#00bb66" opacity=".6"/>
+            <path d="M52 52 L88 80 L100 70 L75 52Z" fill="#00bb66" opacity=".38"/>
+            <path d="M151 44 L175 34 L179 38 L155 46Z" fill="#00ff88" opacity=".5"/>
+            <path d="M157 44 L178 36 L181 39 L161 46Z" fill="#00ff88" opacity=".28"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,255,136,.4)">TC-BVF · A359</div>
+        </div>
+        <div class="fleet-tag" style="color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.06)">WIDE BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:var(--amber)">AIRBUS</div>
+          <div class="fleet-model">A350-900</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">325</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">15,000 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.89</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">RR Trent XWB</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B777-300ER -->
+      <div class="fleet-card reveal" style="transition-delay:.16s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0c1020,#1a1240)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 50 L150 43 L196 45 L150 47 L6 57Z" fill="#c084fc" opacity=".6"/>
+            <path d="M150 43 L196 45 L190 41Z" fill="#e0a0ff" opacity=".9"/>
+            <path d="M38 43 L93 6  L117 20 L77 43Z" fill="#9950d0" opacity=".6"/>
+            <path d="M50 52 L90 82 L102 72 L77 52Z" fill="#9950d0" opacity=".38"/>
+            <path d="M154 44 L178 33 L182 37 L158 46Z" fill="#c084fc" opacity=".55"/>
+            <path d="M160 44 L180 35 L183 38 L164 46Z" fill="#c084fc" opacity=".3"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(192,132,252,.4)">TC-BVG · B77W</div>
+        </div>
+        <div class="fleet-tag" style="color:#c084fc;border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.06)">WIDE BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:#00e5ff">BOEING</div>
+          <div class="fleet-model">B777-300ER</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">396</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">13,650 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.84</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">GE90-115B</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B787-9 -->
+      <div class="fleet-card reveal" style="transition-delay:.24s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0c1020,#101830)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 50 L148 43 L194 45 L148 47 L7 57Z" fill="#38bdf8" opacity=".65"/>
+            <path d="M148 43 L194 45 L189 41Z" fill="#7dd3fc" opacity=".9"/>
+            <path d="M40 43 L92 8  L114 22 L75 43Z" fill="#0284c7" opacity=".6"/>
+            <path d="M52 52 L88 79 L100 70 L75 52Z" fill="#0284c7" opacity=".38"/>
+            <path d="M151 44 L174 34 L178 38 L155 46Z" fill="#38bdf8" opacity=".52"/>
+            <path d="M157 44 L176 36 L179 39 L161 46Z" fill="#38bdf8" opacity=".28"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(56,189,248,.4)">TC-BVH · B789</div>
+        </div>
+        <div class="fleet-tag" style="color:#38bdf8;border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.06)">WIDE BODY</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:#00e5ff">BOEING</div>
+          <div class="fleet-model">B787-9 Dreamliner</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">296</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">14,140 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.85</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">GEnx-1B</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGIONAL -->
+      <div class="fleet-category reveal" style="transition-delay:.05s"><span>REGIONAL</span></div>
+
+      <!-- ATR 72-600 -->
+      <div class="fleet-card reveal">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#0f1a10,#182818)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 50 L125 46 L165 48 L125 50 L20 54Z" fill="#86efac" opacity=".65"/>
+            <path d="M125 46 L165 48 L160 44Z" fill="#bbf7d0" opacity=".9"/>
+            <path d="M60 46 L92 22 L100 30 L80 46Z" fill="#16a34a" opacity=".6"/>
+            <path d="M68 52 L88 66 L94 60 L80 52Z" fill="#16a34a" opacity=".4"/>
+            <circle cx="70" cy="42" r="6" fill="none" stroke="#86efac" stroke-width="1" opacity=".5"/>
+            <circle cx="100" cy="42" r="6" fill="none" stroke="#86efac" stroke-width="1" opacity=".5"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(134,239,172,.4)">TC-BVI · AT76</div>
+        </div>
+        <div class="fleet-tag" style="color:#86efac;border-color:rgba(134,239,172,.3);background:rgba(134,239,172,.06)">REGIONAL</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:var(--amber)">ATR</div>
+          <div class="fleet-model">ATR 72-600</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">78</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">1,528 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">510 km/h</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">PW127M</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- E195-E2 -->
+      <div class="fleet-card reveal" style="transition-delay:.08s">
+        <div class="fleet-img" style="background:linear-gradient(135deg,#101818,#182030)">
+          <svg class="plane-svg" viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 50 L128 46 L170 48 L128 50 L18 54Z" fill="#fbbf24" opacity=".6"/>
+            <path d="M128 46 L170 48 L165 44Z" fill="#fde68a" opacity=".9"/>
+            <path d="M58 46 L94 21 L104 30 L82 46Z" fill="#d97706" opacity=".6"/>
+            <path d="M67 52 L90 67 L97 60 L82 52Z" fill="#d97706" opacity=".4"/>
+            <path d="M132 47 L150 40 L153 43 L135 49Z" fill="#fbbf24" opacity=".45"/>
+          </svg>
+          <div style="position:absolute;bottom:.6rem;left:.8rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(251,191,36,.4)">TC-BVJ · E295</div>
+        </div>
+        <div class="fleet-tag" style="color:#fbbf24;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)">REGIONAL</div>
+        <div class="fleet-body">
+          <div class="fleet-type" style="color:var(--cyan)">EMBRAER</div>
+          <div class="fleet-model">E195-E2</div>
+          <div class="fleet-specs">
+            <div class="spec"><span class="spec-key">PAX</span><span class="spec-val">146</span></div>
+            <div class="spec"><span class="spec-key">Range</span><span class="spec-val">4,300 km</span></div>
+            <div class="spec"><span class="spec-key">Speed</span><span class="spec-val">M0.82</span></div>
+            <div class="spec"><span class="spec-key">Engine</span><span class="spec-val">PW1900G</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /fleet-grid -->
   </div>
 </section>
 
+<!-- ROUTES -->
+<section id="routes">
+  <div class="routes-inner">
+    <div class="section-label reveal">ROUTES</div>
+    <h2 class="section-title reveal">Popular <span>Routes</span></h2>
+    <div class="routes-layout">
+      <div class="reveal-left">
+        <div class="route-map">
+          <div class="corner-tl"></div>
+          <div class="corner-br"></div>
+          <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" style="width:100%">
+            <rect width="400" height="260" fill="#060c1a"/>
+            <path d="M30,80 L80,60 L120,65 L140,55 L180,60 L220,50 L260,55 L300,45 L360,55 L380,70 L370,100 L330,115 L290,110 L260,120 L220,115 L180,125 L140,120 L100,130 L60,120 L30,105Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.15)" stroke-width=".5"/>
+            <path d="M60,130 L100,135 L110,155 L90,175 L70,170 L50,155Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.12)" stroke-width=".5"/>
+            <path d="M140,125 L200,130 L220,160 L200,185 L165,190 L145,170 L140,150Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.12)" stroke-width=".5"/>
+            <path d="M220,120 L270,125 L280,140 L260,155 L235,150Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.12)" stroke-width=".5"/>
+            <path d="M280,115 L340,120 L360,140 L340,160 L300,155 L285,140Z" fill="rgba(0,229,255,.04)" stroke="rgba(0,229,255,.12)" stroke-width=".5"/>
+            <path d="M200,95 Q180,80 120,75" stroke="#00e5ff" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity=".7"/>
+            <path d="M200,95 Q240,80 290,85" stroke="#ffaa00" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity=".7"/>
+            <path d="M200,95 Q195,120 180,155" stroke="#00ff88" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity=".5"/>
+            <path d="M200,95 Q215,75 328,65" stroke="#00e5ff" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity=".5"/>
+            <path d="M200,95 Q150,78 75,80" stroke="#c084fc" stroke-width="1" fill="none" stroke-dasharray="3,3" opacity=".5"/>
+            <g><circle cx="200" cy="95" r="5" fill="none" stroke="#00e5ff" stroke-width="1.5"/><circle cx="200" cy="95" r="2" fill="#00e5ff"/><text x="205" y="88" font-family="'Share Tech Mono',monospace" font-size="8" fill="#00e5ff">LTFM</text></g>
+            <g><circle cx="120" cy="75" r="3" fill="#00e5ff" opacity=".8"/><text x="100" y="70" font-family="'Share Tech Mono',monospace" font-size="7" fill="#00e5ff" opacity=".7">LOWW</text></g>
+            <g><circle cx="290" cy="85" r="3" fill="#ffaa00" opacity=".8"/><text x="293" y="80" font-family="'Share Tech Mono',monospace" font-size="7" fill="#ffaa00" opacity=".7">OMDB</text></g>
+            <g><circle cx="178" cy="157" r="3" fill="#00ff88" opacity=".8"/><text x="155" y="152" font-family="'Share Tech Mono',monospace" font-size="7" fill="#00ff88" opacity=".7">HECA</text></g>
+            <g><circle cx="328" cy="65" r="3" fill="#00e5ff" opacity=".6"/><text x="332" y="61" font-family="'Share Tech Mono',monospace" font-size="7" fill="#00e5ff" opacity=".6">VABB</text></g>
+            <g><circle cx="75" cy="80" r="3" fill="#c084fc" opacity=".7"/><text x="56" y="75" font-family="'Share Tech Mono',monospace" font-size="7" fill="#c084fc" opacity=".7">EGLL</text></g>
+            <line x1="0" y1="130" x2="400" y2="130" stroke="rgba(0,229,255,.07)" stroke-width=".5"/>
+            <line x1="200" y1="0" x2="200" y2="260" stroke="rgba(0,229,255,.07)" stroke-width=".5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="route-list reveal-right">
+        <div class="route-item">
+          <div class="route-airports">LTFM <span>→</span> LOWW</div>
+          <div class="route-info"><div class="route-name">Istanbul — Vienna</div><div class="route-details">B737 MAX 8 · BVA001 · DAILY</div></div>
+          <div class="route-dist">2,480 km</div>
+        </div>
+        <div class="route-item amb">
+          <div class="route-airports">LTFM <span>→</span> OMDB</div>
+          <div class="route-info"><div class="route-name">Istanbul — Dubai</div><div class="route-details">A320 Neo · BVA002 · WEEKLY</div></div>
+          <div class="route-dist" style="color:var(--amber)">3,390 km</div>
+        </div>
+        <div class="route-item grn">
+          <div class="route-airports">LTFM <span>→</span> HECA</div>
+          <div class="route-info"><div class="route-name">Istanbul — Cairo</div><div class="route-details">A320 Neo · BVA003 · WEEKLY</div></div>
+          <div class="route-dist" style="color:var(--green)">1,640 km</div>
+        </div>
+        <div class="route-item" style="border-left-color:#c084fc">
+          <div class="route-airports">LTFM <span>→</span> EGLL</div>
+          <div class="route-info"><div class="route-name">Istanbul — London</div><div class="route-details">A330-300 · BVA010 · DAILY</div></div>
+          <div class="route-dist" style="color:#c084fc">2,890 km</div>
+        </div>
+        <div class="route-item amb">
+          <div class="route-airports">LTFM <span>→</span> VABB</div>
+          <div class="route-info"><div class="route-name">Istanbul — Mumbai</div><div class="route-details">A350-900 · BVA020 · 3x WEEKLY</div></div>
+          <div class="route-dist" style="color:var(--amber)">5,120 km</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-inner">
+    <div class="reveal-left">
+      <div class="cockpit-display">
+        <div class="hud-sep">▸ FLT SYS STATUS ◂</div>
+        <div class="hud-line"><span>CALLSIGN</span><span>BOSPHVRT</span></div>
+        <div class="hud-line amb"><span>HOME BASE</span><span>LTFM</span></div>
+        <div class="hud-line grn"><span>VATSIM STATUS</span><span>CONNECTED ●</span></div>
+        <div class="hud-line"><span>ACARS</span><span>SMARTCARS V2</span></div>
+        <div class="hud-sep">▸ CREW STATUS ◂</div>
+        <div class="hud-line"><span>ACTIVE PILOTS</span><span>6</span></div>
+        <div class="hud-line amb"><span>FLEET SIZE</span><span>10 AIRCRAFT</span></div>
+        <div class="hud-line grn"><span>CPDLC</span><span>ENABLED</span></div>
+        <div class="hud-sep">▸ WEATHER LTFM ◂</div>
+        <div class="hud-line dim"><span>UTC</span><span id="utc-time">--:--:--</span></div>
+        <div class="hud-line dim"><span>QNH</span><span>1013 hPa</span></div>
+        <div class="hud-line grn"><span>VIS</span><span>9999m CAVOK</span></div>
+        <div class="hud-sep" style="color:rgba(255,170,0,.4)">▸ SYS: ALL NOMINAL ◂</div>
+      </div>
+    </div>
+    <div class="about-text reveal-right">
+      <div class="section-label">ABOUT US</div>
+      <h2 class="section-title">The <span>Bosphoruz</span> Experience</h2>
+      <p>
+        <strong>Bosphoruz VA</strong> is a Turkey-based VATSIM virtual airline founded by aviation enthusiasts who believe simulated flight should be as close to the real thing as possible.
+      </p>
+      <p>
+        We operate from Istanbul's <strong>LTFM</strong> across Europe, the Middle East, Africa and Asia — using a diverse fleet ranging from nimble ATR turboprops to long-haul widebodies.
+      </p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">✦</div>
+          <div class="feature-text">
+            <h4>Live VATSIM ATC</h4>
+            <p>All flights operate on the VATSIM network with real air traffic control.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⬡</div>
+          <div class="feature-text">
+            <h4>Ranks & Awards</h4>
+            <p>Progress through pilot ranks based on flight hours and earn achievement badges.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">◈</div>
+          <div class="feature-text">
+            <h4>Active Community</h4>
+            <p>Join group flights, events and discussions on our Discord server.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section id="join">
+  <div class="join-inner">
+    <div class="vatsim-badge" style="margin:0 auto 2rem"><span class="dot"></span>FREE MEMBERSHIP</div>
+    <h2 class="join-title reveal">Ready to <span>Take Off</span>?</h2>
+    <p class="join-sub reveal">Three steps to start your virtual pilot career with Bosphoruz VA.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h4>Create a VATSIM Account</h4>
+        <p>Register for free at vatsim.net and complete the basic pilot orientation course.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.1s">
+        <div class="step-num">02</div>
+        <h4>Fill the Application</h4>
+        <p>Complete our short Google Form — it only takes a few minutes for our team to review.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.2s">
+        <div class="step-num">03</div>
+        <h4>Fly Your First Sector</h4>
+        <p>Install smartCARS, pick a route from Istanbul and make history on VATSIM!</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-primary">APPLY — IT'S FREE</a>
+      <a href="#" class="btn-secondary">JOIN DISCORD</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
-  © 2026 Bosphorus Virtual Airlines
+  <div class="footer-logo"><span>Bosphoruz</span> VA</div>
+  <div class="footer-links">
+    <a href="#">VATSIM</a>
+    <a href="#">smartCARS</a>
+    <a href="#">Discord</a>
+    <a href="#">Rules</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-right">
+    SYS v1.0.0 // LTFM BASE // VATSIM CONNECTED<br>
+    © 2024 BOSPHORUZ VA — ALL RIGHTS RESERVED
+  </div>
 </footer>
 
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const dot    = document.getElementById('cursor-dot');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+  dot.style.left    = e.clientX + 'px'; dot.style.top    = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,.fleet-card,.route-item').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width='36px';cursor.style.height='36px';cursor.style.borderColor='var(--amber)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width='20px';cursor.style.height='20px';cursor.style.borderColor='var(--cyan)'; });
+});
+
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 220; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const sz = Math.random()*2+.4;
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:${(Math.random()*5).toFixed(1)}s;--min:${(Math.random()*.2).toFixed(2)};--max:${(Math.random()*.8+.2).toFixed(2)};`;
+  starsEl.appendChild(s);
+}
+
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', scrollY > 50);
+});
+
+// Reveal
+const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:.1});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el => obs.observe(el));
+
+// Counters
+const cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting && !e.target.dataset.done) {
+      e.target.dataset.done = '1';
+      const tgt = +e.target.dataset.target;
+      let cur = 0; const step = tgt/60;
+      const t = setInterval(() => { cur = Math.min(cur+step, tgt); e.target.textContent = Math.round(cur); if(cur>=tgt) clearInterval(t); }, 16);
+    }
+  });
+}, {threshold:.5});
+document.querySelectorAll('.counter').forEach(el => cObs.observe(el));
+
+// UTC clock
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getUTCHours()).padStart(2,'0');
+  const m = String(now.getUTCMinutes()).padStart(2,'0');
+  const s = String(now.getUTCSeconds()).padStart(2,'0');
+  const el = document.getElementById('utc-time');
+  if(el) el.textContent = h+':'+m+':'+s+' UTC';
+}
+setInterval(updateClock, 1000); updateClock();
+
+// Route active highlight
+document.querySelectorAll('.route-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.route-item').forEach(i => i.style.background = '');
+    item.style.background = 'rgba(0,229,255,.08)';
+  });
+});
+</script>
 </body>
 </html>
